@@ -1,51 +1,60 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
+import Search from './Search';
 
 const CountryList = () => {
-  let [countries,setcountries] = useState([])
-  let[error,seterror] =useState(null)
-  let [loading,setLoading] = useState(true)
- 
+  let [countries, setCountries] = useState([]);
+  let [error, setError] = useState(null);
+  let [loading, setLoading] = useState(true);
+  let [searchTerm, setSearchTerm] = useState("");
 
-  useEffect(()=>{    
-        const fetchcountries = async () =>{
-            try{    
-            const response = await fetch('https://restcountries.com/v3.1/all');
-            const data = await response.json()
-            setcountries(data)
-            console.log(data);
-            }
-            catch{
-              seterror(" Error : Error check fetch and api call statement ")
-              console.log(error + "check fetch and api call statement");
-            }
-            finally{
-                setLoading(false)
-            }
-         }
-         fetchcountries(); 
- },[]) 
- if(loading){
-    <div>loading</div>
- }
- if(error){
- <div>Error</div>
- }
- 
-    return (
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://restcountries.com/v3.1/all');
+        const data = await response.json();
+        setCountries(data);
+      } catch (err) {
+        setError('Error: Check fetch and API call statement');
+        console.log(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    setTimeout(() => {
+      fetchCountries();
+    }, 2000);
+    
+  }, []);
+
+  // Filter countries based on search term
+  const filteredCountries = countries.filter((country) =>
+    country.name.common.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>{error}</div>;
+  }
+
+  return (
     <div>
-     <h1>Countries</h1> 
-     <p>{error}</p>
-     <p>{loading}</p>
-     <ul>
-        {countries.map((country) =>(
-          <li key={country.cca3}>
-            {country.name.common}
-          </li>
-        ))} 
-     </ul>
-     <p>hello</p>  
+      <h1>Countries</h1>
+      <Search onSearch={setSearchTerm} />
+      <ul>
+        {filteredCountries.length === 0 ? (
+          <li>No countries found</li>
+        ) : (
+          filteredCountries.map((country,index) => (
+            <ol key={country.cca3}>{index+1}.  {country.name.common}</ol>
+          ))
+        )}
+      </ul>
     </div>
-  )
-}
+  );
+};
 
-export default CountryList
+export default CountryList;
